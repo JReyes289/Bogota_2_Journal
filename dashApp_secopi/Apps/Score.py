@@ -296,7 +296,7 @@ def update_score(start_date, end_date, value_department, Entity_level,Entity_ter
     
     start_date=pd.to_datetime(start_date)
     end_date=pd.to_datetime(end_date)
-    print(contract_value)
+    #print(contract_value)
     Log_cuantia_contrato_prediccion=np.log(float(contract_value))
     Log_cuantiaaddition_contrato_prediccion=np.log(float(contractAddition_value))
     duracion_prediccion= (end_date-start_date)/ np.timedelta64(1, 'D')
@@ -330,7 +330,7 @@ def update_score(start_date, end_date, value_department, Entity_level,Entity_ter
     probabilidad_sancion= loaded_model.predict_proba(df_prediccion)[0][1]
     probabilidad_no_sancion= loaded_model.predict_proba(df_prediccion)[0][0]
 
-    print(probabilidad_sancion)
+    #print(probabilidad_sancion)
     fig = go.Figure([go.Bar(x=animals, y=[probabilidad_sancion, probabilidad_no_sancion])])
     fig.update_layout(
     title='sanctioned contract',
