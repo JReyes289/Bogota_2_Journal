@@ -298,7 +298,7 @@ def update_score(start_date, end_date, value_department, Entity_level,Entity_ter
     end_date=pd.to_datetime(end_date)
     print(contract_value)
     Log_cuantia_contrato_prediccion=np.log(float(contract_value))
-    Log_cuantia_contrato_prediccion=np.log(float(contractAddition_value))
+    Log_cuantiaaddition_contrato_prediccion=np.log(float(contractAddition_value))
     duracion_prediccion= (end_date-start_date)/ np.timedelta64(1, 'D')
     Numeroanno_firma_del_contrato_prediccion=start_date.year
     mes_fin_ejec_contrato_prediccion=end_date.month
@@ -313,12 +313,25 @@ def update_score(start_date, end_date, value_department, Entity_level,Entity_ter
     quarter_fin_contrato_departamento_ejecucion_prediccion=str(value_department)+"-"+str(quarter_fin_ejec_contrato_prediccion)
     municipios_ejecucion_prediccio=dict_municipio_ejecucion[municipality_execution]
     
-    print(Log_cuantia_contrato_prediccion,Log_cuantia_contrato_prediccion,duracion_prediccion,
-    Numeroanno_firma_del_contrato_prediccion,mes_fin_ejec_contrato_prediccion,quarter_fin_ejec_contrato_prediccion)          
+    
+    df_prediccion = pd.DataFrame([[Log_cuantia_contrato_prediccion,Log_cuantiaaddition_contrato_prediccion,duracion_prediccion,
+    Numeroanno_firma_del_contrato_prediccion,mes_fin_ejec_contrato_prediccion,quarter_fin_ejec_contrato_prediccion,
+    Anno_fin_ejec_contrato_prediccion,latitud_prediccion,longitud_prediccion,nivel_entidad_prediccion,
+    orden_entidad_prediccion,municipio_obtencion_prediccion,municipio_entrega_prediccion,5,municipios_ejecucion_prediccio]], 
+    columns=['Log_cuantia_contrato', 'Log_valor_total_de_adiciones', 'duracion',
+       'Numeroanno_firma_del_contrato', 'mes_fin_ejec_contrato',
+       'quarter_fin_ejec_contrato', 'Anno_fin_ejec_contrato', 'latitud',
+       'longitud', 'nivel_entidad', 'orden_entidad', 'municipio_obtencion',
+       'municipio_entrega', 'quarter_fin_contrato_departamento_ejecucion',
+       'municipios_ejecucion'])
 
     animals=['Sancionado', 'No sancionado']
 
-    fig = go.Figure([go.Bar(x=animals, y=[0.734, 0.296])])
+    probabilidad_sancion= loaded_model.predict_proba(df_prediccion)[0][1]
+    probabilidad_no_sancion= loaded_model.predict_proba(df_prediccion)[0][0]
+
+    print(probabilidad_sancion)
+    fig = go.Figure([go.Bar(x=animals, y=[probabilidad_sancion, probabilidad_no_sancion])])
     fig.update_layout(
     title='sanctioned contract',
     xaxis_tickfont_size=14,
