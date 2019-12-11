@@ -12,6 +12,7 @@ import pickle
 import xgboost as xgb
 from sklearn import preprocessing
 from sklearn.metrics import precision_score, roc_auc_score, recall_score, confusion_matrix, roc_curve, precision_recall_curve, accuracy_score
+import plotly.graph_objects as go
 
 from app import app
 
@@ -45,6 +46,9 @@ municipios_ejecucion = pd.read_csv("municipios_ejecucion.csv",encoding="latin-1"
 list_municipios_ejecucion = [x for x in municipios_ejecucion.municipios_ejecucion_original]
 dict_municipio_ejecucion = municipios_ejecucion.set_index("municipios_ejecucion_original").to_dict()['municipios_ejecucion']
 
+latitud=pd.read_csv("data_latitud.csv")
+dict_latitud = latitud.set_index("nombre").to_dict()["latitud"]
+dict_longitud = latitud.set_index("nombre").to_dict()["longitud"]
 
 filename = 'Fmodel_1M_Smote_OK.sav'
 loaded_model = pickle.load(open(filename, 'rb'))
@@ -71,7 +75,7 @@ layout = html.Div(children=[
                                         #multi=True,
                                         options = [{'label': i, 'value': i}
                                         for i in list_departments],                                            
-                                        placeholder="Select department",
+                                        value=list_departments[0],
                                     ),
                                 ]),
 
@@ -268,10 +272,10 @@ layout = html.Div(children=[
 
 @app.callback(                              ###HISTOGRAMAS ENTIDAD
 
-    [
-        #dash.dependencies.Output("amount_graph-score", "figure"),
-        dash.dependencies.Output('Predicted_Score', 'children'),
-    ],
+    
+        dash.dependencies.Output("amount_graph-score", "figure"),
+        #dash.dependencies.Output('Predicted_Score', 'children'),
+    
     (    
         dash.dependencies.Input('date-range-score', 'start_date'),
         dash.dependencies.Input('date-range-score', 'end_date'),
@@ -290,24 +294,37 @@ def update_score(start_date, end_date, value_department, Entity_level,Entity_ter
                 municipality_obtaintion,municipality_delivery,municipality_execution,contract_value,
                 contractAddition_value):
     
+    start_date=pd.to_datetime(start_date)
+    end_date=pd.to_datetime(end_date)
     print(contract_value)
-    Log_cuantia_contrato_prediccion=np.log(contract_value)
-    Log_cuantia_contrato_prediccion=np.log(contractAddition_value)
+    Log_cuantia_contrato_prediccion=np.log(float(contract_value))
+    Log_cuantia_contrato_prediccion=np.log(float(contractAddition_value))
     duracion_prediccion= (end_date-start_date)/ np.timedelta64(1, 'D')
     Numeroanno_firma_del_contrato_prediccion=start_date.year
     mes_fin_ejec_contrato_prediccion=end_date.month
     quarter_fin_ejec_contrato_prediccion=end_date.quarter
     Anno_fin_ejec_contrato_prediccion=end_date.year
-    latitud_prediccion=6.25184
-    longitud_prediccion=-75.563591
+    latitud_prediccion=dict_latitud[value_department]
+    longitud_prediccion=dict_longitud[value_department]
     nivel_entidad_prediccion=dict_nivel_entidad[Entity_level]
     orden_entidad_prediccion=dict_orden_entidad[Entity_territorial_level]
     municipio_obtencion_prediccion=dict_municipio_obtencion[municipality_obtaintion]
     municipio_entrega_prediccion=dict_municipio_entrega[municipality_delivery]
-    quarter_fin_contrato_departamento_ejecucion_prediccion=value_department+"-"+quarter_fin_ejec_contrato_prediccion
+    quarter_fin_contrato_departamento_ejecucion_prediccion=str(value_department)+"-"+str(quarter_fin_ejec_contrato_prediccion)
     municipios_ejecucion_prediccio=dict_municipio_ejecucion[municipality_execution]
     
     print(Log_cuantia_contrato_prediccion,Log_cuantia_contrato_prediccion,duracion_prediccion,
     Numeroanno_firma_del_contrato_prediccion,mes_fin_ejec_contrato_prediccion,quarter_fin_ejec_contrato_prediccion)          
 
-    return latitud_prediccion
+    animals=['Sancionado', 'No sancionado']
+
+    fig = go.Figure([go.Bar(x=animals, y=[0.734, 0.296])])
+    fig.update_layout(
+    title='sanctioned contract',
+    xaxis_tickfont_size=14,
+    yaxis=dict(
+        title='Probability',
+        titlefont_size=16,
+        tickfont_size=14,
+    ))
+    return fig
