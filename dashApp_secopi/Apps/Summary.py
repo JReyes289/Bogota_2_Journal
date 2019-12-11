@@ -43,7 +43,7 @@ engine = psycopg2.connect(
 
 token = 'pk.eyJ1IjoibmV3dXNlcmZvcmV2ZXIiLCJhIjoiY2o2M3d1dTZiMGZobzMzbnp2Z2NiN3lmdyJ9.cQFKe3F3ovbfxTsM9E0ZSQ'
 
-with open('colombia.geo.json') as f:
+with open('colombia.geo.json',encoding="latin-1") as f:
     
     geojson = json.loads(f.read())
 
